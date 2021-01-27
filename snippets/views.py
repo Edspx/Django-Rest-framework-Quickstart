@@ -1,15 +1,28 @@
-from rest_framework import generics
+from rest_framework import generics, permissions
 from tutorial.snippets.models import Snippet
-from tutorial.snippets.serializers import SnippetSerializer
+from tutorial.snippets.serializers import SnippetSerializer, UserSerializer
+from django.contrib.auth.models import User
+from tutorial.snippets.permissions import IsOwnerOrReadOnly
 
 
 class SnippetList(generics.ListCreateAPIView):
     queryset = Snippet.objects.all()
     serializer_class = SnippetSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
-
+    def perform_create(self, serializer):
+        serializer.save(ower=self.request.user)
 
 class SnippetDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Snippet.objects.all()
     serializer_class = SnippetSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+
+class UserList(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+class UserDetail(generics.RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
 
